@@ -10,6 +10,22 @@
   <!-- highlight.js -->
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css" id="hljs-theme">
+  <script>
+    // 首屏尽早应用主题，避免亮/暗闪烁；默认跟随系统
+    (function () {
+      var pref = 'auto';
+      try { pref = localStorage.getItem('markflow-theme') || 'auto'; } catch (e) { }
+      var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = (!pref || pref === 'auto') ? (dark ? 'dark' : 'light') : pref;
+      document.documentElement.setAttribute('data-theme', theme === 'dark' ? '' : theme);
+      var link = document.getElementById('hljs-theme');
+      if (theme === 'light' || theme === 'sepia') {
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+      } else if (theme === 'forest') {
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css';
+      }
+    })();
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
@@ -1227,6 +1243,7 @@
         </button>
         <!-- Theme (中文) -->
         <select class="theme-select hide-mobile" id="themeSelect">
+          <option value="auto">跟随系统</option>
           <option value="">暗色</option>
           <option value="light">亮色</option>
           <option value="sepia">怀旧</option>
@@ -1692,37 +1709,83 @@
       };
     });
     // ─────────────────────────────────────────────
-    // 主题（让 Mermaid 也跟随变化）
+    // 主题：跟随系统 / 暗色 / 亮色 / 怀旧 / 森林
     // ─────────────────────────────────────────────
-    document.getElementById('themeSelect').onchange = function () {
-      document.documentElement.setAttribute('data-theme', this.value);
-      // 切换 hljs 主题
+    const THEME_KEY = 'markflow-theme';
+    const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const themeSelectEl = document.getElementById('themeSelect');
+
+    // 把偏好（auto 或具体主题）解析成实际生效的主题
+    function resolveTheme(pref) {
+      if (!pref || pref === 'auto') return systemDarkQuery.matches ? 'dark' : 'light';
+      return pref;
+    }
+
+    function applyTheme(pref, rerender) {
+      const theme = resolveTheme(pref);
+
+      // 1. 页面配色（暗色沿用 :root 默认值）
+      document.documentElement.setAttribute('data-theme', theme === 'dark' ? '' : theme);
+
+      // 2. 切换 hljs 代码高亮主题
       const hljsLink = document.getElementById('hljs-theme');
-      if (this.value === 'light' || this.value === 'sepia') {
+      if (theme === 'light' || theme === 'sepia') {
         hljsLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
-      } else if (this.value === 'forest') {
+      } else if (theme === 'forest') {
         hljsLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css';
       } else {
         hljsLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css';
       }
 
-      // 切换 Mermaid 主题
-      let mermaidTheme = 'dark';
-      if (this.value === 'light' || this.value === 'sepia') {
-        mermaidTheme = 'default';
-      } else if (this.value === 'forest') {
-        mermaidTheme = 'forest'; // mermaid 可能没有 forest，但可以尝试
+      // 3. 切换 Mermaid 主题
+      if (window.mermaid) {
+        let mermaidTheme = 'dark';
+        if (theme === 'light' || theme === 'sepia') {
+          mermaidTheme = 'default';
+        } else if (theme === 'forest') {
+          mermaidTheme = 'forest';
+        }
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: mermaidTheme,
+          themeVariables: { darkMode: theme === 'dark' || theme === 'forest', background: 'transparent' },
+          securityLevel: 'loose',
+        });
       }
-      // 重新初始化 mermaid 配置
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: mermaidTheme,
-        themeVariables: { darkMode: this.value === '' ? true : false },
-        securityLevel: 'loose',
-      });
-      // 重新渲染所有 mermaid 图表
-      runMermaid();
+
+      // 4. 重渲染预览，让已生成的图表换色
+      if (rerender) {
+        const tab = tabs.find(t => t.id === activeTabId);
+        if (tab) updatePreview(tab.content);
+      }
+    }
+
+    function getSavedThemePref() {
+      try {
+        return localStorage.getItem(THEME_KEY) || 'auto';
+      } catch (e) {
+        return 'auto';
+      }
+    }
+
+    // 打开页面时按保存的偏好应用，默认“跟随系统”
+    themeSelectEl.value = getSavedThemePref();
+    applyTheme(themeSelectEl.value, false);
+
+    themeSelectEl.onchange = function () {
+      try { localStorage.setItem(THEME_KEY, this.value); } catch (e) { }
+      applyTheme(this.value, true);
     };
+
+    // 系统主题变化时，若正在“跟随系统”则自动切换
+    const onSystemThemeChange = () => {
+      if (themeSelectEl.value === 'auto') applyTheme('auto', true);
+    };
+    if (systemDarkQuery.addEventListener) {
+      systemDarkQuery.addEventListener('change', onSystemThemeChange);
+    } else if (systemDarkQuery.addListener) {
+      systemDarkQuery.addListener(onSystemThemeChange);
+    }
     // ─────────────────────────────────────────────
     // 打印
     // ─────────────────────────────────────────────
@@ -1848,14 +1911,8 @@
       });
     };
     // ─────────────────────────────────────────────
-    // Mermaid 初始化
+    // Mermaid 初始化已由 applyTheme() 统一处理（会跟随当前主题）
     // ─────────────────────────────────────────────
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'dark',
-      themeVariables: { darkMode: true, background: 'transparent' },
-      securityLevel: 'loose',
-    });
     // ─────────────────────────────────────────────
     // 分屏同步滚动实现
     // ─────────────────────────────────────────────

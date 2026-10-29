@@ -833,6 +833,10 @@
         .settings-item:hover {
             background: #fafcfb;
         }
+        .settings-item.settings-link {
+            text-decoration: none;
+            color: inherit;
+        }
         .settings-item .si-left {
             display: flex;
             align-items: center;
@@ -1052,6 +1056,82 @@
             font-weight: 500;
         }
 
+        /* 顶部下载横幅 */
+        .app-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 10px 46px 10px 16px;
+            background: linear-gradient(135deg, #2ecc9e 0%, #239b7a 100%);
+            color: #fff;
+            box-shadow: 0 2px 14px rgba(35, 155, 122, 0.3);
+            font-size: 13px;
+        }
+        .app-banner .banner-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            text-align: center;
+        }
+        .app-banner .banner-text strong {
+            font-weight: 700;
+        }
+        .app-banner .banner-text span {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .app-banner .banner-download {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: #fff;
+            color: var(--primary-dark);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .app-banner .banner-download:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+        }
+        .app-banner .banner-close {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            font-size: 15px;
+            line-height: 1;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .app-banner .banner-close:hover {
+            background: rgba(255, 255, 255, 0.32);
+        }
+        body.has-banner {
+            padding-top: 72px;
+        }
+
         /* 响应式 */
         @media (max-width: 460px) {
             .phone-frame {
@@ -1074,10 +1154,55 @@
             body {
                 padding: 0;
             }
+            body.has-banner {
+                padding-top: 60px;
+            }
+            body.has-banner .phone-frame {
+                height: calc(100vh - 60px);
+            }
+            .app-banner {
+                padding: 8px 40px 8px 12px;
+                gap: 10px;
+                font-size: 12px;
+            }
+            .app-banner .banner-text span {
+                display: none;
+            }
         }
     </style>
 </head>
-<body>
+<body class="has-banner">
+    <!-- 顶部下载横幅 -->
+    <div class="app-banner" id="appBanner">
+        <div class="banner-text">
+            <strong>📲 下载手机 App，获取完整服务</strong>
+            <span>网页版为效果演示，提醒推送与数据管理请在 App 中体验</span>
+        </div>
+        <a class="banner-download"
+            href="https://github.com/ChronoKnight-ZZH/ChronoKnight/blob/main/base.apk"
+            target="_blank" rel="noopener">立即下载</a>
+        <button class="banner-close" id="bannerClose" title="关闭提示" aria-label="关闭提示">✕</button>
+    </div>
+    <script>
+        // 关闭过的用户不再显示横幅
+        (function () {
+            var banner = document.getElementById('appBanner');
+            var closeBtn = document.getElementById('bannerClose');
+            var KEY = 'fridge_banner_dismissed';
+            var dismissed = false;
+            try { dismissed = localStorage.getItem(KEY) === '1'; } catch (e) { }
+            function hide() {
+                banner.remove();
+                document.body.classList.remove('has-banner');
+            }
+            if (dismissed) hide();
+            closeBtn.addEventListener('click', function () {
+                hide();
+                try { localStorage.setItem(KEY, '1'); } catch (e) { }
+            });
+        })();
+    </script>
+
     <!-- 装饰背景 -->
     <div class="bg-decoration c1"></div>
     <div class="bg-decoration c2"></div>
@@ -1195,6 +1320,19 @@
                                 </div>
                                 <span class="si-arrow">›</span>
                             </div>
+                        </div>
+                        <div class="settings-group">
+                            <div class="settings-group-header">应用下载</div>
+                            <a class="settings-item settings-link"
+                                href="https://github.com/ChronoKnight-ZZH/ChronoKnight/blob/main/app-debug.apk"
+                                target="_blank" rel="noopener">
+                                <div class="si-left">
+                                    <span class="si-icon">📲</span>
+                                    <span class="si-label">下载手机 App</span>
+                                </div>
+                                <span class="si-value">Android</span>
+                                <span class="si-arrow">›</span>
+                            </a>
                         </div>
                         <div class="settings-group">
                             <div class="settings-group-header">关于</div>

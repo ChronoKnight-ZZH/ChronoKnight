@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>瀑布流 · 点击全屏弹窗</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f3f8;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .masonry {
+            column-width: 240px;
+            column-gap: 18px;
+            max-width: 1600px;
+            margin: 16px auto 0 auto;
+            padding: 0 16px 16px 16px;
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 18px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #e3e8f0;
+            box-shadow: 0 8px 18px -6px rgba(20, 30, 40, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .masonry-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 28px -8px rgba(0, 25, 45, 0.25);
+        }
+
+        .masonry-item img {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #cfd9e6;
+            transition: opacity 0.2s;
+            pointer-events: none; /* 点击事件由父级处理 */
+        }
+
+        /* 全屏弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            cursor: default;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: 300;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.2s;
+            z-index: 1010;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        /* 底部状态栏 */
+        .status-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 16px 40px 16px;
+            clear: both;
+        }
+
+        .load-button {
+            background: #ffffff;
+            border: 1px solid #c2d2e8;
+            border-radius: 60px;
+            padding: 14px 42px;
+            font-size: 1.15rem;
+            font-weight: 520;
+            color: #1e2f40;
+            box-shadow: 0 8px 18px rgba(0, 30, 50, 0.1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .load-button:hover {
+            background: #edf3fd;
+            border-color: #7fa1cc;
+            box-shadow: 0 12px 24px rgba(35, 75, 125, 0.2);
+            transform: scale(1.02);
+        }
+
+        .load-button:active {
+            transform: scale(0.97);
+            background: #dee8f5;
+        }
+
+        .button-loader {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(55, 95, 145, 0.2);
+            border-top-color: #2b5797;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .hint-text {
+            margin-top: 14px;
+            font-size: 0.95rem;
+            color: #5c6f87;
+            background: rgba(210, 225, 245, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 6px 26px;
+            border-radius: 60px;
+            letter-spacing: 0.4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 520px) {
+            .masonry {
+                column-width: 160px;
+                column-gap: 12px;
+                padding: 0 10px 10px 10px;
+            }
+            .masonry-item {
+                margin-bottom: 12px;
+                border-radius: 16px;
+            }
+            .load-button {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+            .hint-text {
+                font-size: 0.85rem;
+                padding: 5px 18px;
+            }
+            .modal-close {
+                top: 10px;
+                right: 15px;
+                font-size: 35px;
+            }
+        }
+
+        /* 暗色模式 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1c2128;
+            }
+            .masonry-item {
+                background: #2a313c;
+                box-shadow: 0 8px 18px -6px #0b0f14;
+            }
+            .load-button {
+                background: #2b3340;
+                border-color: #475871;
+                color: #deecff;
+                box-shadow: 0 8px 16px #0f131b;
+            }
+            .load-button:hover {
+                background: #354153;
+                border-color: #6883ad;
+            }
+            .hint-text {
+                background: #29303b;
+                color: #b8c9e6;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 瀑布流容器 -->
+    <div class="masonry" id="masonryContainer"></div>
+
+    <!-- 底部状态栏 -->
+    <div class="status-bar" id="loadingBar">
+        <div class="load-button" id="refreshButton">
+            <span class="button-loader hidden" id="buttonLoader"></span>
+            <span id="buttonText">点击加载更多</span>
+        </div>
+        <div class="hint-text" id="statusHint">✨ 点击图片可全屏查看</div>
+    </div>
+
+    <!-- 全屏弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <span class="modal-close" id="modalClose">&times;</span>
+        <img class="modal-content" id="modalImage" src="" alt="全屏预览">
+    </div>
+
+    <script>
+        (function() {
+            // ----- 图片API列表（直接返回图片）-----
+            const IMAGE_APIS = [
+                'https://www.dmoe.cc/random.php',
+                'https://cdn.seovx.com/?mom=302',
+                'https://api.isoyu.com/bing_images.php',
+                'https://api.paugram.com/wallpaper/'
+            ];
+
+            const BATCH_SIZE = 10;
+            const PRELOAD_TIMEOUT = 9000;
+            const SCROLL_THRESHOLD = 350;
+
+            // 状态
+            let isLoading = false;
+
+            // DOM 元素
+            const container = document.getElementById('masonryContainer');
+            const refreshButton = document.getElementById('refreshButton');
+            const buttonLoader = document.getElementById('buttonLoader');
+            const buttonText = document.getElementById('buttonText');
+            const statusHint = document.getElementById('statusHint');
+            
+            // 弹窗元素
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalImage = document.getElementById('modalImage');
+            const modalClose = document.getElementById('modalClose');
+
+            /**
+             * 生成带时间戳的随机图片URL
+             */
+            function getRandomImageUrl() {
+                const baseUrl = IMAGE_APIS[Math.floor(Math.random() * IMAGE_APIS.length)];
+                const separator = baseUrl.includes('?') ? '&' : '?';
+                return `${baseUrl}${separator}_t=${Date.now()}_r=${Math.random().toString(36).substring(2, 8)}`;
+            }
+
+            /**
+             * 预加载单张图片
+             */
+            function preloadSingleImage() {
+                return new Promise((resolve, reject) => {
+                    const imgUrl = getRandomImageUrl();
+                    const img = new Image();
+                    const timer = setTimeout(() => {
+                        img.onload = null;
+                        img.onerror = null;
+                        reject(new Error(`预加载超时: ${imgUrl.substring(0, 60)}`));
+                    }, PRELOAD_TIMEOUT);
+
+                    img.onload = () => {
+                        clearTimeout(timer);
+                        resolve(imgUrl);
+                    };
+                    img.onerror = () => {
+                        clearTimeout(timer);
+                        reject(new Error(`图片加载失败: ${imgUrl.substring(0, 60)}`));
+                    };
+                    img.src = imgUrl;
+                });
+            }
+
+            /**
+             * 批量获取预加载成功的图片
+             */
+            async function fetchBatch(count = BATCH_SIZE) {
+                const promises = [];
+                for (let i = 0; i < count; i++) {
+                    promises.push(preloadSingleImage());
+                }
+                const results = await Promise.allSettled(promises);
+
+                const successfulUrls = results
+                    .filter(r => r.status === 'fulfilled')
+                    .map(r => r.value);
+
+                const failedCount = results.filter(r => r.status === 'rejected').length;
+                if (failedCount > 0) {
+                    console.warn(`本次有 ${failedCount} 张图片预加载失败 (已跳过)`);
+                }
+                return successfulUrls;
+            }
+
+            /**
+             * 打开全屏弹窗
+             */
+            function openModal(imageUrl) {
+                modalImage.src = imageUrl;
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // 防止背景滚动
+            }
+
+            /**
+             * 关闭全屏弹窗
+             */
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                modalImage.src = ''; // 清空src，避免闪烁
+                document.body.style.overflow = '';
+            }
+
+            /**
+             * 将图片URL数组追加到瀑布流，并为每个项绑定点击事件
+             */
+            function appendImagesToMasonry(urls) {
+                if (!urls.length) return;
+                
+                const fragment = document.createDocumentFragment();
+                urls.forEach(url => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'masonry-item';
+
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = '随机图片';
+                    img.loading = 'lazy';
+                    img.onerror = (e) => {
+                        e.target.style.opacity = '0.4';
+                        e.target.style.background = '#a0b2c9';
+                    };
+                    
+                    itemDiv.appendChild(img);
+                    
+                    // 绑定点击事件打开弹窗
+                    itemDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openModal(url);
+                    });
+                    
+                    fragment.appendChild(itemDiv);
+                });
+                container.appendChild(fragment);
+            }
+
+            /**
+             * 核心加载函数
+             */
+            async function loadMoreImages() {
+                if (isLoading) return;
+
+                isLoading = true;
+                buttonLoader.classList.remove('hidden');
+                buttonText.textContent = '加载中...';
+                statusHint.textContent = '从多个图源抓取中';
+
+                try {
+                    const imageUrls = await fetchBatch(BATCH_SIZE);
+
+                    if (imageUrls.length > 0) {
+                        appendImagesToMasonry(imageUrls);
+                        statusHint.textContent = `✅ 新增 ${imageUrls.length} 张图片`;
+                        buttonText.textContent = '再来一批';
+                    } else {
+                        statusHint.textContent = '⚠️ 全部加载失败，点我重试';
+                        buttonText.textContent = '重新尝试';
+                    }
+                } catch (error) {
+                    statusHint.textContent = '❌ 加载异常，点击重试';
+                    buttonText.textContent = '重试';
+                    console.error('loadMore error:', error);
+                } finally {
+                    isLoading = false;
+                    buttonLoader.classList.add('hidden');
+                }
+            }
+
+            /**
+             * 滚动检查
+             */
+            function checkScrollAndLoad() {
+                if (isLoading) return;
+
+                const scrollY = window.scrollY;
+                const windowHeight = window.innerHeight;
+                const documentHeight = document.documentElement.scrollHeight;
+
+                if (scrollY + windowHeight >= documentHeight - SCROLL_THRESHOLD) {
+                    loadMoreImages();
+                }
+            }
+
+            // ----- 事件监听 -----
+            
+            // 滚动节流
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        checkScrollAndLoad();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // 窗口大小改变检查
+            window.addEventListener('resize', () => {
+                clearTimeout(window._resizeTimer);
+                window._resizeTimer = setTimeout(() => {
+                    checkScrollAndLoad();
+                }, 150);
+            });
+
+            // 点击按钮加载
+            refreshButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                loadMoreImages();
+            });
+
+            // 弹窗关闭事件
+            modalClose.addEventListener('click', closeModal);
+            
+            // 点击遮罩层关闭
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            // ESC键关闭弹窗
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            // ----- 初始化 -----
+            (async function init() {
+                isLoading = true;
+                buttonLoader.classList.remove('hidden');
+                buttonText.textContent = '首次加载...';
+                statusHint.textContent = '正在聚合图源，请稍候';
+
+                try {
+                    const firstBatchUrls = await fetchBatch(BATCH_SIZE);
+                    if (firstBatchUrls.length > 0) {
+                        appendImagesToMasonry(firstBatchUrls);
+                        statusHint.textContent = '🎉 点击图片全屏查看';
+                        buttonText.textContent = '刷新 / 加载';
+                    } else {
+                        statusHint.textContent = '首组加载失败，点击重试';
+                        buttonText.textContent = '重试';
+                    }
+                } catch (error) {
+                    statusHint.textContent = '初始化异常，点击刷新';
+                    buttonText.textContent = '点击重试';
+                    console.error('init error:', error);
+                } finally {
+                    isLoading = false;
+                    buttonLoader.classList.add('hidden');
+                    if (buttonText.textContent === '首次加载...') {
+                        buttonText.textContent = '刷新 / 加载';
+                    }
+                    setTimeout(() => {
+                        checkScrollAndLoad();
+                    }, 300);
+                }
+            })();
+
+            // 调试
+            window.debugMasonry = { loadMore: loadMoreImages, container };
+        })();
+    </script>
+</body>
+</html>

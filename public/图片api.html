@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片获取与切换</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .type-indicator {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .image-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .image-placeholder {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .placeholder-text {
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+        
+        .data-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .data-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .json-data {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .image-placeholder {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>图片获取与切换</h1>
+        <p class="subtitle">点击按钮获取图片数据，或切换图片类型</p>
+    </header>
+    
+    <div class="container">
+        <div class="controls">
+            <button id="getImageBtn" class="btn btn-primary">获取图片数据</button>
+            <button id="toggleTypeBtn" class="btn btn-secondary">切换图片类型</button>
+        </div>
+        
+        <div class="type-indicator">
+            当前类型: <span id="currentType">wallpaper</span>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            正在获取图片数据...
+        </div>
+        
+        <div class="image-container">
+            <div class="image-placeholder">
+                <p class="placeholder-text">点击"获取图片数据"按钮显示图片</p>
+                <img id="displayedImage" src="" alt="获取的图片">
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <div class="data-title">图片数据</div>
+            <div class="json-data" id="jsonData">暂无数据</div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>图片API: https://v2.xxapi.cn/api/random4kPic</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const getImageBtn = document.getElementById('getImageBtn');
+            const toggleTypeBtn = document.getElementById('toggleTypeBtn');
+            const currentType = document.getElementById('currentType');
+            const displayedImage = document.getElementById('displayedImage');
+            const jsonData = document.getElementById('jsonData');
+            const loading = document.getElementById('loading');
+            const placeholderText = document.querySelector('.placeholder-text');
+            
+            let imageType = 'wallpaper';
+            const apiUrl = 'https://v2.xxapi.cn/api/random4kPic';
+            
+            // 获取图片数据
+            getImageBtn.addEventListener('click', async function() {
+                loading.style.display = 'block';
+                placeholderText.style.display = 'none';
+                
+                try {
+                    const response = await fetch(`${apiUrl}?type=${imageType}`);
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 显示图片 - 修正：从data字段获取图片URL
+                    if (data.data) {
+                        displayedImage.src = data.data;
+                        displayedImage.style.display = 'block';
+                        placeholderText.style.display = 'none';
+                    } else {
+                        throw new Error('API返回的数据格式不正确');
+                    }
+                    
+                    // 显示JSON数据
+                    jsonData.textContent = JSON.stringify(data, null, 2);
+                    
+                } catch (error) {
+                    jsonData.textContent = `错误: ${error.message}`;
+                    placeholderText.textContent = '获取图片失败，请重试';
+                    placeholderText.style.display = 'block';
+                    displayedImage.style.display = 'none';
+                } finally {
+                    loading.style.display = 'none';
+                }
+            });
+            
+            // 切换图片类型
+            toggleTypeBtn.addEventListener('click', function() {
+                imageType = imageType === 'wallpaper' ? 'acg' : 'wallpaper';
+                currentType.textContent = imageType;
+                
+                // 重置显示
+                displayedImage.style.display = 'none';
+                placeholderText.textContent = '类型已切换，点击"获取图片数据"按钮显示新类型图片';
+                placeholderText.style.display = 'block';
+                jsonData.textContent = '类型已切换，请重新获取图片数据';
+            });
+        });
+    </script>
+</body>
+</html>

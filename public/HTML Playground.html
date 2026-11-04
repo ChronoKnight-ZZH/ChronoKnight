@@ -17,16 +17,20 @@
     body {
       background: #ffffff;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       color: #333;
       user-select: none;
     }
 
+    /* ===== 整体：左（代码 + 控制台） 右（预览） ===== */
     .container {
       display: flex;
       height: 100vh;
+      height: 100dvh;
       background: #ffffff;
       position: relative;
+      overflow: hidden;
     }
 
     .editor-section {
@@ -37,43 +41,58 @@
       min-width: 200px;
       max-width: calc(100% - 200px);
       width: 50%;
+      overflow: hidden;
     }
 
+    /* ---------- 顶部工具条（紧凑） ---------- */
     .editor-header {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
-      padding: 14px 20px;
+      padding: 6px 10px;
       background: #fafafa;
       border-bottom: 1px solid #e0e0e0;
+      min-height: 34px;
+      gap: 8px;
     }
 
     .editor-title {
       color: #333;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+      white-space: nowrap;
     }
 
     .editor-controls {
       display: flex;
-      gap: 10px;
+      gap: 6px;
       margin-left: auto;
+      flex-wrap: nowrap;
     }
 
+    /* ---------- 统一紧凑按钮 ---------- */
     .btn {
-      padding: 8px 16px;
+      padding: 4px 9px;
       border: 1px solid #ddd;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
-      display: flex;
+      font-size: 12px;
+      line-height: 1.2;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
       color: #555;
       background: #ffffff;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .btn i {
+      font-size: 11px;
     }
 
     .btn:hover {
@@ -114,21 +133,42 @@
       border-color: #218838;
     }
 
+    /* 控制台内更小的按钮 */
+    .btn-sm {
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      gap: 4px;
+    }
+
+    .btn-sm i {
+      font-size: 10px;
+    }
+
+    /* 按钮激活态 */
+    .btn.active {
+      background: #e6f2fb;
+      border-color: #007acc;
+      color: #007acc;
+    }
+
+    /* ---------- 代码区 ---------- */
     .code-container {
       display: flex;
-      flex: 1;
+      flex: 1 1 0;
+      min-height: 0;
       overflow: hidden;
       position: relative;
     }
 
     .line-numbers {
-      width: 60px;
-      padding: 16px 8px;
+      width: 52px;
+      padding: 12px 6px;
       background: #f8f9fa;
       border-right: 1px solid #e0e0e0;
       text-align: right;
       font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.5;
       color: #6c757d;
       overflow: hidden;
@@ -145,7 +185,7 @@
       left: 0;
       right: 0;
       min-height: 100%;
-      padding: 16px 8px;
+      padding: 12px 6px;
       box-sizing: border-box;
     }
 
@@ -158,11 +198,11 @@
     textarea {
       width: 100%;
       height: 100%;
-      padding: 16px;
+      padding: 12px;
       padding-left: 8px;
       border: none;
       font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.5;
       resize: none;
       outline: none;
@@ -177,8 +217,30 @@
       margin: 0;
     }
 
+    /* 拖拽文件导入时的视觉反馈 */
+    .code-container.drag-over::after {
+      content: '松开鼠标以导入代码文件';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 122, 204, 0.08);
+      border: 2px dashed #007acc;
+      color: #007acc;
+      font-size: 14px;
+      font-weight: 600;
+      pointer-events: none;
+      border-radius: 4px;
+    }
+
+    /* ---------- 左右分栏拖拽 ---------- */
     .resize-handle {
-      width: 10px;
+      width: 8px;
       background: #f0f0f0;
       cursor: col-resize;
       display: flex;
@@ -201,7 +263,6 @@
       border-radius: 1px;
     }
 
-    /* 拖动时的视觉反馈层 */
     .resize-overlay {
       position: fixed;
       top: 0;
@@ -218,7 +279,6 @@
       display: block;
     }
 
-    /* 虚拟分割线 */
     .resize-guide {
       position: fixed;
       top: 0;
@@ -228,12 +288,15 @@
       z-index: 1001;
       display: none;
       pointer-events: none;
+      transform: translateX(-9999px);
     }
 
     .resize-guide.active {
       display: block;
+      transform: translateX(0);
     }
 
+    /* ---------- 预览区 ---------- */
     .preview-section {
       flex: 1;
       display: flex;
@@ -241,29 +304,35 @@
       background: #ffffff;
       min-width: 200px;
       max-width: calc(100% - 200px);
+      overflow: hidden;
     }
 
     .preview-header {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
-      padding: 14px 20px;
+      padding: 6px 10px;
       background: #fafafa;
       border-bottom: 1px solid #e0e0e0;
+      min-height: 34px;
+      gap: 8px;
     }
 
     .preview-title {
       color: #333;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+      white-space: nowrap;
     }
 
     .preview-controls {
       display: flex;
-      gap: 10px;
+      gap: 6px;
       margin-left: auto;
+      flex-wrap: nowrap;
     }
 
     #preview {
@@ -273,16 +342,17 @@
       background: #ffffff;
     }
 
+    /* ---------- 通知 ---------- */
     .notification {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      padding: 12px 20px;
-      border-radius: 8px;
+      padding: 9px 16px;
+      border-radius: 6px;
       color: white;
-      font-size: 14px;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      font-size: 12px;
+      z-index: 2000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
       display: none;
       background: #007acc;
     }
@@ -332,22 +402,35 @@
       color: #666;
     }
 
+    /* ---------- 状态栏（含控制台入口） ---------- */
     .status-bar {
-      padding: 8px 16px;
+      flex-shrink: 0;
+      padding: 4px 10px;
       background: #f8f9fa;
       border-top: 1px solid #e0e0e0;
-      font-size: 12px;
+      font-size: 11px;
       color: #6c757d;
       display: flex;
+      align-items: center;
       justify-content: space-between;
+      gap: 8px;
+      min-height: 30px;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     .sync-indicator {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 8px;
-      height: 8px;
+      top: 8px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #28a745;
       opacity: 0;
@@ -373,29 +456,357 @@
       }
     }
 
-    .resize-guide {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #007acc;
-      z-index: 1001;
+    /* ============================================================
+       控制台（位于左侧，与代码共用空间）
+       ============================================================ */
+    .console-panel {
+      flex-shrink: 0;
+      height: 0;
       display: none;
-      pointer-events: none;
-      transform: translateX(-9999px);
-      /* 初始隐藏到屏幕外 */
+      flex-direction: column;
+      background: #ffffff;
+      border-top: 1px solid #e0e0e0;
+      overflow: hidden;
+      position: relative;
     }
 
-    .resize-guide.active {
-      display: block;
-      transform: translateX(0);
-      /* 由JS控制具体位置 */
+    .console-panel.open {
+      display: flex;
+    }
+
+    /* 顶部拖拽条 */
+    .console-resizer {
+      flex-shrink: 0;
+      height: 6px;
+      background: #f5f5f5;
+      cursor: row-resize;
+      position: relative;
+      z-index: 5;
+      transition: background 0.15s;
+      touch-action: none;
+    }
+
+    .console-resizer::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36px;
+      height: 2px;
+      background: #ccc;
+      border-radius: 1px;
+    }
+
+    .console-resizer:hover,
+    .console-resizer.dragging {
+      background: #e8e8e8;
+    }
+
+    .console-resizer:hover::after,
+    .console-resizer.dragging::after {
+      background: #007acc;
+    }
+
+    /* 控制台头部 */
+    .console-header {
+      flex-shrink: 0;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      background: #fafafa;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .console-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .console-badge {
+      margin-left: 4px;
+      font-size: 10px;
+      color: #6c757d;
+      background: #eef1f4;
+      border-radius: 8px;
+      padding: 1px 7px;
+      font-weight: 400;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .console-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    /* 输出区域 */
+    .console-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+    }
+
+    .console-output {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      user-select: text;
+    }
+
+    .console-output::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    .console-output::-webkit-scrollbar-thumb {
+      background: #d5d5d5;
+      border-radius: 5px;
+      border: 2px solid #fff;
+    }
+
+    .console-output::-webkit-scrollbar-thumb:hover {
+      background: #bbb;
+    }
+
+    /* 单行日志：行内淡灰色分割线 */
+    .console-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      padding: 3px 10px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .console-line:last-child {
+      border-bottom: none;
+    }
+
+    .console-line-icon {
+      flex-shrink: 0;
+      width: 11px;
+      text-align: center;
+      color: #adb5bd;
+      font-size: 10px;
+      line-height: 1.7;
+      user-select: none;
+    }
+
+    .console-line-msg {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .console-line.log .console-line-msg {
+      color: #333;
+    }
+
+    .console-line.info {
+      background: #f7fbff;
+    }
+
+    .console-line.info .console-line-msg {
+      color: #007acc;
+    }
+
+    .console-line.info .console-line-icon {
+      color: #007acc;
+    }
+
+    .console-line.warn {
+      background: #fffbe6;
+    }
+
+    .console-line.warn .console-line-msg {
+      color: #8a6d3b;
+    }
+
+    .console-line.warn .console-line-icon {
+      color: #d19a00;
+    }
+
+    .console-line.error {
+      background: #fdf2f2;
+    }
+
+    .console-line.error .console-line-msg {
+      color: #c62828;
+    }
+
+    .console-line.error .console-line-icon {
+      color: #dc3545;
+    }
+
+    .console-line.debug .console-line-msg {
+      color: #6c757d;
+    }
+
+    .console-line.cmd {
+      background: #f7fbff;
+    }
+
+    .console-line.cmd .console-line-msg {
+      color: #007acc;
+      font-weight: 600;
+    }
+
+    .console-line.result .console-line-msg {
+      color: #218838;
+    }
+
+    .console-line.result .console-line-icon {
+      color: #28a745;
+    }
+
+    .console-line.system .console-line-msg {
+      color: #adb5bd;
+      font-style: italic;
+    }
+
+    /* 命令输入行：紧贴日志流 */
+    .console-input-row {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 10px;
+      height: 28px;
+      border-top: 1px solid #e0e0e0;
+      background: #ffffff;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .console-prompt {
+      flex-shrink: 0;
+      width: 11px;
+      text-align: center;
+      color: #007acc;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .console-input {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #333;
+      font-family: inherit;
+      font-size: inherit;
+      user-select: text;
+    }
+
+    .console-input::placeholder {
+      color: #b8c0c8;
+      font-size: 11px;
+    }
+
+    /* ============================================================
+       移动端：上下结构（预览在上，代码在下）
+       ============================================================ */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      /* 预览区优先显示在顶部 */
+      .preview-section {
+        order: 1;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 1 45% !important;
+        min-height: 140px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      /* 代码 + 控制台在下方 */
+      .editor-section {
+        order: 2;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 1 55% !important;
+        min-height: 0;
+      }
+
+      /* 隐藏左右分栏拖拽 */
+      .resize-handle {
+        display: none !important;
+      }
+
+      .resize-guide,
+      .resize-overlay {
+        display: none !important;
+      }
+
+      /* 按钮只显示图标，更紧凑 */
+      .btn span {
+        display: none;
+      }
+
+      .btn {
+        padding: 7px 9px;
+      }
+
+      .btn i {
+        font-size: 13px;
+      }
+
+      .editor-header,
+      .preview-header {
+        padding: 6px 8px;
+      }
+
+      /* 控制台拖拽条加大触控区域 */
+      .console-resizer {
+        height: 12px;
+      }
+
+      .console-resizer::after {
+        top: 5px;
+      }
+
+      .status-bar {
+        font-size: 10px;
+        padding: 4px 8px;
+      }
+
+      .status-left {
+        gap: 8px;
+      }
+
+      .notification {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        text-align: center;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
+    <!-- ================= 左侧：代码 + 控制台 ================= -->
     <div class="editor-section" id="editorSection">
       <div class="editor-header">
         <div class="editor-title">
@@ -403,6 +814,10 @@
           <span>代码编辑器</span>
         </div>
         <div class="editor-controls">
+          <button class="btn" id="importBtn" title="导入代码文件（也可直接拖拽文件到代码框）">
+            <i class="fas fa-file-import"></i>
+            <span>导入</span>
+          </button>
           <button class="btn" id="formatBtn" title="格式化代码">
             <i class="fas fa-indent"></i>
             <span>格式化</span>
@@ -416,27 +831,71 @@
             <span>清空</span>
           </button>
         </div>
+        <!-- 隐藏的文件选择器 -->
+        <input type="file" id="importInput" style="display:none;"
+          accept=".html,.htm,.xhtml,.txt,.css,.js,.mjs,.json,.xml,.svg,.md,.vue">
       </div>
-      <div class="code-container">
+
+      <div class="code-container" id="codeContainer">
         <div class="line-numbers" id="lineNumbers">
           <div class="line-numbers-content" id="lineNumbersContent">1</div>
         </div>
         <div class="code-area">
-          <textarea id="htmlCode" spellcheck="false"></textarea>
+          <textarea id="htmlCode" spellcheck="false" placeholder="在此输入 HTML 代码，或把 .html 文件拖拽到这里..."></textarea>
           <div class="sync-indicator" id="syncIndicator"></div>
         </div>
       </div>
+
+      <!-- 控制台面板（与代码共用左侧空间，从下方展开） -->
+      <div class="console-panel" id="consolePanel">
+        <div class="console-resizer" id="consoleResizer" title="拖动调整控制台高度"></div>
+        <div class="console-header">
+          <div class="console-title">
+            <i class="fas fa-terminal icon"></i>
+            <span>控制台</span>
+            <span class="console-badge" id="consoleBadge">0</span>
+          </div>
+          <div class="console-controls">
+            <button class="btn btn-sm" id="consoleClearBtn" title="清空控制台">
+              <i class="fas fa-ban"></i>
+              <span>清空</span>
+            </button>
+            <button class="btn btn-sm" id="consoleCloseBtn" title="关闭控制台">
+              <i class="fas fa-times"></i>
+              <span>关闭</span>
+            </button>
+          </div>
+        </div>
+        <div class="console-body">
+          <div class="console-output" id="consoleOutput"></div>
+          <div class="console-input-row">
+            <span class="console-prompt">&rsaquo;</span>
+            <input type="text" id="consoleInput" class="console-input" spellcheck="false" autocomplete="off"
+              placeholder="输入 JavaScript 命令后按 Enter 执行（↑/↓ 翻历史）">
+          </div>
+        </div>
+      </div>
+
+      <!-- 状态栏：控制台入口就放在这里，不额外占用页面空间 -->
       <div class="status-bar">
-        <span id="charCount">字符数: 0</span>
-        <span id="lineCount">行数: 1</span>
-        <span id="syncStatus">同步: 就绪</span>
+        <div class="status-left">
+          <span id="charCount">字符数: 0</span>
+          <span id="lineCount">行数: 1</span>
+          <span id="syncStatus">同步: 就绪</span>
+        </div>
+        <button class="btn btn-sm" id="toggleConsoleBtn" title="打开 / 关闭控制台">
+          <i class="fas fa-terminal"></i>
+          <span>控制台</span>
+        </button>
       </div>
     </div>
 
+    <!-- ================= 分栏拖拽条 ================= -->
     <div class="resize-handle" id="resizeHandle">
       <div style="width: 2px; height: 30px; background: #ccc;"></div>
     </div>
 
+    <!-- ================= 右侧：预览 ================= -->
     <div class="preview-section" id="previewSection">
       <div class="preview-header">
         <div class="preview-title">
@@ -472,6 +931,124 @@
   <a id="downloadAnchor" style="display:none;"></a>
 
   <script>
+    /* ============================================================
+       一、注入到预览 iframe 中的「控制台桥接脚本」
+       ============================================================ */
+    const CONSOLE_BRIDGE = `(function () {
+  function send(type, payload) {
+    try {
+      parent.postMessage({ __htmlRunner__: true, type: type, payload: payload }, '*');
+    } catch (e) { }
+  }
+
+  function format(value) {
+    try {
+      if (value === null) return 'null';
+      if (value === undefined) return 'undefined';
+
+      var type = typeof value;
+
+      if (type === 'string') return value;
+      if (type === 'number' || type === 'boolean' || type === 'bigint') return String(value);
+      if (type === 'symbol') return value.toString();
+      if (type === 'function') return '\\u0192 ' + (value.name || 'anonymous') + '()';
+
+      if (value instanceof Error) return (value.name || 'Error') + ': ' + value.message;
+
+      if (typeof Node !== 'undefined' && value instanceof Node) {
+        if (value.nodeType === 1) {
+          var html = value.outerHTML;
+          return html.length > 500 ? html.slice(0, 500) + ' ...' : html;
+        }
+        return String(value.nodeValue != null ? value.nodeValue : value);
+      }
+
+      var seen = [];
+      return JSON.stringify(value, function (key, val) {
+        if (typeof val === 'object' && val !== null) {
+          if (seen.indexOf(val) !== -1) return '[\\u5faa\\u73af\\u5f15\\u7528]';
+          seen.push(val);
+        }
+        if (typeof val === 'function') return '\\u0192 ' + (val.name || 'anonymous') + '()';
+        if (typeof val === 'undefined') return 'undefined';
+        return val;
+      }, 2);
+    } catch (e) {
+      try { return Object.prototype.toString.call(value); } catch (e2) { return '[\\u65e0\\u6cd5\\u5e8f\\u5217\\u5316]'; }
+    }
+  }
+
+  var LEVELS = ['log', 'info', 'warn', 'error', 'debug'];
+
+  for (var i = 0; i < LEVELS.length; i++) {
+    (function (level) {
+      var original = console[level];
+      console[level] = function () {
+        var args = [];
+        for (var k = 0; k < arguments.length; k++) args.push(format(arguments[k]));
+        send('console', { level: level, args: args });
+        try { if (original) original.apply(console, arguments); } catch (e) { }
+      };
+    })(LEVELS[i]);
+  }
+
+  window.addEventListener('error', function (event) {
+    var msg = event.message || '\\u811a\\u672c\\u8fd0\\u884c\\u9519\\u8bef';
+    if (event.lineno) msg += '  (\\u7b2c ' + event.lineno + ' \\u884c)';
+    send('console', { level: 'error', args: [msg] });
+  });
+
+  window.addEventListener('unhandledrejection', function (event) {
+    send('console', { level: 'error', args: ['\\u672a\\u6355\\u83b7\\u7684 Promise \\u5f02\\u5e38: ' + format(event.reason)] });
+  });
+
+  window.addEventListener('message', function (event) {
+    var data = event.data;
+    if (!data || data.__htmlRunnerCmd__ !== true) return;
+
+    var result;
+    try {
+      result = (0, eval)(data.code);
+    } catch (err) {
+      send('result', { level: 'error', args: [format(err)] });
+      return;
+    }
+
+    if (result && typeof result.then === 'function') {
+      send('result', { level: 'info', args: ['Promise {<pending>}'] });
+      result.then(function (v) {
+        send('result', { level: 'result', args: [format(v)] });
+      }, function (err) {
+        send('result', { level: 'error', args: [format(err)] });
+      });
+      return;
+    }
+
+    send('result', { level: 'result', args: [format(result)] });
+  });
+})();`;
+
+    function getBridgeTag() {
+      return '<scr' + 'ipt>' + CONSOLE_BRIDGE + '</scr' + 'ipt>';
+    }
+
+    function buildPreviewDoc(code) {
+      const source = code || '';
+      const bridge = getBridgeTag();
+
+      if (/<head[^>]*>/i.test(source)) {
+        return source.replace(/<head[^>]*>/i, function (m) { return m + bridge; });
+      }
+      if (/<html[^>]*>/i.test(source)) {
+        return source.replace(/<html[^>]*>/i, function (m) { return m + bridge; });
+      }
+      return bridge + source;
+    }
+
+
+    /* ============================================================
+       二、主逻辑
+       ============================================================ */
     const htmlCode = document.getElementById('htmlCode');
     const preview = document.getElementById('preview');
     const notification = document.getElementById('notification');
@@ -486,6 +1063,21 @@
     const resizeHandle = document.getElementById('resizeHandle');
     const resizeOverlay = document.getElementById('resizeOverlay');
     const resizeGuide = document.getElementById('resizeGuide');
+    const codeContainer = document.getElementById('codeContainer');
+
+    /* 控制台相关元素 */
+    const consolePanel = document.getElementById('consolePanel');
+    const consoleResizer = document.getElementById('consoleResizer');
+    const consoleOutput = document.getElementById('consoleOutput');
+    const consoleInput = document.getElementById('consoleInput');
+    const consoleBadge = document.getElementById('consoleBadge');
+    const toggleConsoleBtn = document.getElementById('toggleConsoleBtn');
+    const consoleClearBtn = document.getElementById('consoleClearBtn');
+    const consoleCloseBtn = document.getElementById('consoleCloseBtn');
+
+    /* 导入相关元素 */
+    const importBtn = document.getElementById('importBtn');
+    const importInput = document.getElementById('importInput');
 
     // 同步状态管理
     let isSyncing = false;
@@ -495,7 +1087,7 @@
     let typingTimeout = null;
     let lastCodeValue = '';
 
-    // 调整大小状态管理
+    // 左右分栏状态管理
     let resizeData = {
       isResizing: false,
       startX: 0,
@@ -503,93 +1095,100 @@
       containerWidth: 0,
       animationFrame: null,
       lastRenderTime: 0,
-      renderDelay: 16, // 大约60fps
+      renderDelay: 16,
       targetWidth: 0
     };
 
-    // 防抖同步阈值（毫秒）
     const SYNC_DELAY_TYPING = 100;
     const SYNC_DELAY_IDLE = 100;
 
-    // 初始化
+    /* 是否为移动端上下布局 */
+    function isMobileLayout() {
+      return window.matchMedia('(max-width: 768px)').matches;
+    }
+
+    let lastIsMobile = isMobileLayout();
+
+    /* ---------------- 初始化 ---------------- */
     function init() {
-      // 从localStorage加载保存的代码
       const savedCode = localStorage.getItem('htmlCode');
       if (savedCode) {
         htmlCode.value = savedCode;
         lastCodeValue = savedCode;
       }
 
-      // 初始运行
       runCode();
       updateLineNumbers();
       updateCharCount();
 
-      // 添加输入监听
       setupInputListener();
-
-      // 添加滚动监听
       setupScrollListener();
-
-      // 初始化调整大小功能
       setupResize();
+      setupImport();
+      setupDragDrop();
+      initConsole();
     }
 
     function setupInputListener() {
       htmlCode.addEventListener('input', handleCodeInput);
 
-      // 键盘事件监听
       htmlCode.addEventListener('keydown', (e) => {
-        // 处理 Tab 键
         if (e.key === 'Tab') {
-          e.preventDefault(); // 阻止默认的 Tab 行为（切换焦点）
+          e.preventDefault();
 
           const start = htmlCode.selectionStart;
           const end = htmlCode.selectionEnd;
           const value = htmlCode.value;
 
-          // 插入 4 个空格
           htmlCode.value = value.substring(0, start) + '    ' + value.substring(end);
-
-          // 将光标移动到插入的空格之后
           htmlCode.selectionStart = htmlCode.selectionEnd = start + 4;
 
-          // 触发输入事件以更新行号和字符计数
           htmlCode.dispatchEvent(new Event('input'));
 
-          // 标记为正在输入
           isTyping = true;
           clearTimeout(typingTimeout);
-          typingTimeout = setTimeout(() => {
-            isTyping = false;
-          }, 500);
+          typingTimeout = setTimeout(() => { isTyping = false; }, 500);
         } else {
           isTyping = true;
           clearTimeout(typingTimeout);
-          typingTimeout = setTimeout(() => {
-            isTyping = false;
-          }, 500);
+          typingTimeout = setTimeout(() => { isTyping = false; }, 500);
         }
       });
     }
 
-    // 设置滚动监听器
     function setupScrollListener() {
       htmlCode.addEventListener('scroll', () => {
-        // 同步行号区域的滚动位置
         lineNumbers.scrollTop = htmlCode.scrollTop;
       });
     }
 
-    // 设置调整大小功能 - 优化版本
+    /* ---------------- 左右分栏拖拽（仅桌面端） ---------------- */
     function setupResize() {
       resizeHandle.addEventListener('mousedown', startResize);
-
-      // 恢复保存的布局
       restoreLayout();
+
+      // 桌面 / 移动布局切换处理
+      window.addEventListener('resize', function () {
+        const now = isMobileLayout();
+
+        if (now) {
+          // 移动端：清除内联宽度，交给媒体查询
+          editorSection.style.width = '';
+          editorSection.style.flex = '';
+          previewSection.style.width = '';
+          previewSection.style.flex = '';
+        } else if (lastIsMobile) {
+          // 从移动端切回桌面：恢复保存的分栏比例
+          restoreLayout();
+        }
+
+        lastIsMobile = now;
+      });
     }
 
     function startResize(e) {
+      if (isMobileLayout()) return;
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -599,11 +1198,9 @@
       resizeData.containerWidth = document.querySelector('.container').offsetWidth;
       resizeData.targetWidth = resizeData.startWidth;
 
-      // 显示覆盖层和引导线
       resizeOverlay.classList.add('active');
       resizeGuide.classList.add('active');
 
-      // 初始化引导线位置
       updateGuidePosition(resizeData.startWidth);
 
       document.addEventListener('mousemove', handleResizeMove);
@@ -626,7 +1223,6 @@
 
       const now = Date.now();
       if (now - resizeData.lastRenderTime >= resizeData.renderDelay) {
-        // 只在拖拽时显示引导线
         updateGuidePosition(newWidth);
         resizeData.lastRenderTime = now;
       }
@@ -636,13 +1232,11 @@
       }
 
       resizeData.animationFrame = requestAnimationFrame(() => {
-        // 只在拖拽时更新布局和引导线
         if (resizeData.isResizing) {
           applyLayout(resizeData.targetWidth, true);
         }
       });
     }
-
 
     function stopResize() {
       if (!resizeData.isResizing) return;
@@ -652,16 +1246,11 @@
         resizeData.animationFrame = null;
       }
 
-      // 隐藏覆盖层和引导线
       resizeOverlay.classList.remove('active');
       resizeGuide.classList.remove('active');
-
-      // 重置引导线位置（隐藏到屏幕外）
       resizeGuide.style.transform = 'translateX(-9999px)';
 
-      // 最终应用布局（不显示引导线）
       applyLayout(resizeData.targetWidth, false);
-
       saveLayout();
 
       document.removeEventListener('mousemove', handleResizeMove);
@@ -672,27 +1261,24 @@
     }
 
     function updateGuidePosition(width) {
-      // 计算引导线位置（相对于窗口）
       const containerRect = document.querySelector('.container').getBoundingClientRect();
-      const guideX = containerRect.left + width + 5; // 5px偏移量让引导线居中显示
-
-      // 使用transform更新位置（高性能）
+      const guideX = containerRect.left + width + 4;
       resizeGuide.style.transform = `translateX(${guideX}px)`;
     }
 
     function applyLayout(width, showGuide = false) {
+      if (isMobileLayout()) return;
+
       const containerWidth = resizeData.containerWidth || document.querySelector('.container').offsetWidth;
-      const previewWidth = containerWidth - width - 10;
+      const previewWidth = containerWidth - width - 8;
 
       requestAnimationFrame(() => {
-        // 设置编辑器宽度
+        if (isMobileLayout()) return;
+
         editorSection.style.width = width + 'px';
         editorSection.style.flex = 'none';
-
-        // 更新预览区域宽度
         previewSection.style.width = previewWidth + 'px';
 
-        // 只有在用户拖拽时才更新引导线位置
         if (showGuide && resizeData.isResizing) {
           updateGuidePosition(width);
         }
@@ -700,6 +1286,8 @@
     }
 
     function restoreLayout() {
+      if (isMobileLayout()) return;
+
       try {
         const savedPercentage = localStorage.getItem('editorPercentage');
         if (savedPercentage) {
@@ -708,14 +1296,15 @@
             const containerWidth = document.querySelector('.container').offsetWidth;
             const editorWidth = Math.round((percentage / 100) * containerWidth);
 
-            // 延迟应用恢复的布局，确保页面完全加载
             setTimeout(() => {
-              // 直接设置宽度，不显示引导线
+              if (isMobileLayout()) return;
               requestAnimationFrame(() => {
+                if (isMobileLayout()) return;
+
                 editorSection.style.width = editorWidth + 'px';
                 editorSection.style.flex = 'none';
 
-                const previewWidth = containerWidth - editorWidth - 10;
+                const previewWidth = containerWidth - editorWidth - 8;
                 previewSection.style.width = previewWidth + 'px';
               });
             }, 100);
@@ -727,6 +1316,8 @@
     }
 
     function saveLayout() {
+      if (isMobileLayout()) return;
+
       try {
         const editorWidth = editorSection.offsetWidth;
         const containerWidth = document.querySelector('.container').offsetWidth;
@@ -739,67 +1330,47 @@
       }
     }
 
-    // 处理代码输入
+    /* ---------------- 代码输入与同步 ---------------- */
     function handleCodeInput() {
       updateLineNumbers();
       updateCharCount();
 
       const currentCode = htmlCode.value;
-      const currentTime = Date.now();
-
-      // 如果代码没有变化，跳过同步
-      if (currentCode === lastCodeValue) {
-        return;
-      }
-
+      if (currentCode === lastCodeValue) return;
       lastCodeValue = currentCode;
 
-      // 清除之前的同步定时器
       clearTimeout(syncTimeout);
 
-      // 根据输入状态调整同步延迟
       const syncDelay = isTyping ? SYNC_DELAY_TYPING : SYNC_DELAY_IDLE;
 
-      // 设置新的同步定时器
-      syncTimeout = setTimeout(() => {
-        syncCode();
-      }, syncDelay);
+      syncTimeout = setTimeout(() => { syncCode(); }, syncDelay);
 
-      // 更新同步状态显示
       syncStatus.textContent = '同步: 待同步...';
       syncStatus.style.color = '#ff9800';
     }
 
-    // 同步代码到预览
     function syncCode() {
       if (isSyncing) return;
 
       isSyncing = true;
       lastSyncTime = Date.now();
 
-      // 显示同步指示器
       syncIndicator.classList.add('active');
       syncStatus.textContent = '同步: 同步中...';
       syncStatus.style.color = '#007acc';
 
       try {
-        // 无感保存到localStorage
         try {
           localStorage.setItem('htmlCode', htmlCode.value);
-        } catch (e) {
-          // 忽略存储错误
-        }
+        } catch (e) { }
 
-        // 更新预览
-        preview.srcdoc = htmlCode.value;
+        preview.srcdoc = buildPreviewDoc(htmlCode.value);
 
-        // 更新同步状态
         setTimeout(() => {
           syncIndicator.classList.remove('active');
           syncStatus.textContent = '同步: 已同步';
           syncStatus.style.color = '#28a745';
 
-          // 3秒后恢复就绪状态
           setTimeout(() => {
             if (!isTyping) {
               syncStatus.textContent = '同步: 就绪';
@@ -811,7 +1382,6 @@
         }, 100);
 
       } catch (error) {
-        // 错误处理
         preview.srcdoc = `
             <div style="padding:20px;color:#dc3545;font-family:sans-serif">
               <h3>同步错误</h3>
@@ -832,7 +1402,123 @@
       }
     }
 
-    // 功能按钮
+    /* ---------------- 导入文件 ---------------- */
+    function setupImport() {
+      importBtn.addEventListener('click', function () {
+        importInput.click();
+      });
+
+      importInput.addEventListener('change', function () {
+        const file = this.files && this.files[0];
+        if (file) readFileIntoEditor(file);
+        // 允许重复导入同一个文件
+        this.value = '';
+      });
+    }
+
+    function readFileIntoEditor(file) {
+      if (!file) return;
+
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+      if (file.size > MAX_SIZE) {
+        showNotification('文件过大（超过 5MB）', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const text = typeof e.target.result === 'string'
+          ? e.target.result
+          : String(e.target.result || '');
+
+        htmlCode.value = text;
+        lastCodeValue = text;
+
+        updateLineNumbers();
+        updateCharCount();
+        syncCode();
+
+        showNotification('已导入：' + file.name, 'success');
+      };
+
+      reader.onerror = function () {
+        showNotification('读取文件失败，请重试', 'error');
+      };
+
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    /* ---------------- 拖拽文件导入 ---------------- */
+    function setupDragDrop() {
+      // 阻止浏览器默认打开文件的行为（在窗口级别兜底）
+      window.addEventListener('dragover', function (e) {
+        e.preventDefault();
+      });
+      window.addEventListener('drop', function (e) {
+        e.preventDefault();
+      });
+
+      // textarea 自身默认会插入拖入的文本，这里也要阻止
+      htmlCode.addEventListener('dragover', function (e) {
+        e.preventDefault();
+      });
+      htmlCode.addEventListener('drop', function (e) {
+        e.preventDefault();
+      });
+
+      let dragCounter = 0;
+
+      function hasFileDrag(e) {
+        if (!e.dataTransfer) return false;
+        const types = e.dataTransfer.types;
+        if (!types) return false;
+        if (typeof types.includes === 'function') return types.includes('Files');
+        return Array.prototype.indexOf.call(types, 'Files') !== -1;
+      }
+
+      codeContainer.addEventListener('dragenter', function (e) {
+        if (!hasFileDrag(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter++;
+        codeContainer.classList.add('drag-over');
+      });
+
+      codeContainer.addEventListener('dragover', function (e) {
+        if (!hasFileDrag(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+        codeContainer.classList.add('drag-over');
+      });
+
+      codeContainer.addEventListener('dragleave', function (e) {
+        if (!hasFileDrag(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter--;
+        if (dragCounter <= 0) {
+          dragCounter = 0;
+          codeContainer.classList.remove('drag-over');
+        }
+      });
+
+      codeContainer.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        dragCounter = 0;
+        codeContainer.classList.remove('drag-over');
+
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files.length) {
+          readFileIntoEditor(files[0]);
+        }
+      });
+    }
+
+    /* ---------------- 功能按钮 ---------------- */
     document.getElementById('formatBtn').addEventListener('click', formatCode);
     document.getElementById('downloadBtn').addEventListener('click', downloadHtml);
     document.getElementById('clearBtn').addEventListener('click', clearCode);
@@ -840,7 +1526,6 @@
     document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
     document.getElementById('newwindowBtn').addEventListener('click', openInNewWindow);
 
-    // 格式化代码
     function formatCode() {
       const code = htmlCode.value;
 
@@ -854,9 +1539,7 @@
         for (let i = 0; i < lines.length; i++) {
           let line = lines[i].trim();
 
-          if (line === '') {
-            continue;
-          }
+          if (line === '') continue;
 
           if (line.startsWith('</')) {
             indentLevel = Math.max(0, indentLevel - 1);
@@ -879,7 +1562,6 @@
         updateLineNumbers();
         updateCharCount();
 
-        // 立即同步格式化后的代码
         syncCode();
         showNotification('代码已格式化', 'success');
       } catch (error) {
@@ -887,7 +1569,6 @@
       }
     }
 
-    // 下载HTML文件
     function downloadHtml() {
       const code = htmlCode.value;
       const blob = new Blob([code], { type: 'text/html' });
@@ -902,7 +1583,6 @@
       showNotification('文件已下载', 'success');
     }
 
-    // 清空代码
     function clearCode() {
       htmlCode.value = '';
       lastCodeValue = '';
@@ -910,23 +1590,18 @@
       updateLineNumbers();
       updateCharCount();
 
-      // 立即同步清空后的代码
       syncCode();
       showNotification('编辑器已清空', 'success');
     }
 
-    // 运行代码（手动触发）
     function runCode() {
-      // 清除所有定时器
       clearTimeout(syncTimeout);
       clearTimeout(typingTimeout);
 
-      // 强制同步
       syncCode();
       showNotification('代码已运行', 'success');
     }
 
-    // 切换全屏预览
     function toggleFullscreen() {
       if (preview.requestFullscreen) {
         if (!document.fullscreenElement) {
@@ -973,10 +1648,7 @@
               justify-content: space-between;
               align-items: center;
             }
-            .header h1 {
-              margin: 0;
-              font-size: 18px;
-            }
+            .header h1 { margin: 0; font-size: 18px; }
             .close-btn {
               background: rgba(255,255,255,0.2);
               border: none;
@@ -986,9 +1658,7 @@
               cursor: pointer;
               font-size: 14px;
             }
-            .close-btn:hover {
-              background: rgba(255,255,255,0.3);
-            }
+            .close-btn:hover { background: rgba(255,255,255,0.3); }
           </style>
         </head>
         <body>
@@ -1005,7 +1675,7 @@
       showNotification('已在新窗口打开预览', 'success');
     }
 
-    // 更新行号
+    /* ---------------- 编辑器状态 ---------------- */
     function updateLineNumbers() {
       const lines = htmlCode.value.split('\n');
       let numbers = '';
@@ -1017,18 +1687,14 @@
       lineNumbersContent.textContent = numbers || '1';
       lineCount.textContent = `行数: ${lines.length || 1}`;
 
-      // 确保行号区域高度足够显示所有行
       const textareaHeight = htmlCode.scrollHeight;
       lineNumbersContent.style.minHeight = textareaHeight + 'px';
     }
 
-    // 更新字符计数
     function updateCharCount() {
-      const count = htmlCode.value.length;
-      charCount.textContent = `字符数: ${count}`;
+      charCount.textContent = `字符数: ${htmlCode.value.length}`;
     }
 
-    // 显示通知
     function showNotification(message, type = 'info') {
       notification.textContent = message;
       notification.className = `notification ${type} show`;
@@ -1041,7 +1707,227 @@
       }, 3000);
     }
 
-    // 初始化
+
+    /* ============================================================
+       三、控制台（左侧，与代码共用空间）
+       ============================================================ */
+    const CONSOLE_ICONS = {
+      log: '',
+      info: 'i',
+      warn: '!',
+      error: 'x',
+      debug: '',
+      cmd: '',
+      result: '<',
+      system: '.'
+    };
+    const MAX_CONSOLE_LINES = 500;
+
+    let consoleOpened = false;
+    let consoleHeight = 150;
+    let commandHistory = [];
+    let historyIndex = 0;
+
+    function initConsole() {
+      // 恢复上次高度
+      try {
+        const saved = parseInt(localStorage.getItem('consoleHeight') || '', 10);
+        if (!isNaN(saved) && saved >= 100 && saved <= window.innerHeight - 200) {
+          consoleHeight = saved;
+        }
+      } catch (e) { }
+
+      toggleConsoleBtn.addEventListener('click', toggleConsole);
+      consoleCloseBtn.addEventListener('click', closeConsole);
+      consoleClearBtn.addEventListener('click', clearConsole);
+
+      // 使用 pointer 事件，同时支持鼠标与触摸拖动
+      consoleResizer.addEventListener('pointerdown', startConsoleResize);
+      consoleInput.addEventListener('keydown', handleConsoleInputKey);
+
+      window.addEventListener('message', handlePreviewMessage);
+    }
+
+    /* ---------- 接收预览页消息 ---------- */
+    function handlePreviewMessage(event) {
+      const data = event.data;
+      if (!data || data.__htmlRunner__ !== true) return;
+
+      const payload = data.payload || {};
+
+      if (data.type === 'console') {
+        appendConsoleLine(payload.level || 'log', payload.args || []);
+      } else if (data.type === 'result') {
+        appendConsoleLine(payload.level || 'result', payload.args || []);
+      }
+    }
+
+    /* ---------- 输出行 ---------- */
+    function appendConsoleLine(level, args) {
+      level = level || 'log';
+
+      const line = document.createElement('div');
+      line.className = 'console-line ' + level;
+
+      const icon = document.createElement('span');
+      icon.className = 'console-line-icon';
+      icon.textContent = CONSOLE_ICONS[level] || '';
+
+      const msg = document.createElement('span');
+      msg.className = 'console-line-msg';
+      msg.textContent = Array.isArray(args) ? args.join(' ') : String(args);
+
+      line.appendChild(icon);
+      line.appendChild(msg);
+      consoleOutput.appendChild(line);
+
+      while (consoleOutput.childElementCount > MAX_CONSOLE_LINES) {
+        consoleOutput.removeChild(consoleOutput.firstElementChild);
+      }
+
+      updateConsoleBadge();
+      scrollConsoleToBottom();
+    }
+
+    function updateConsoleBadge() {
+      consoleBadge.textContent = String(consoleOutput.childElementCount);
+    }
+
+    function scrollConsoleToBottom() {
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
+    function clearConsole() {
+      consoleOutput.innerHTML = '';
+      updateConsoleBadge();
+      showNotification('控制台已清空', 'success');
+    }
+
+    /* ---------- 命令输入 ---------- */
+    function handleConsoleInputKey(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const cmd = consoleInput.value.trim();
+        if (!cmd) return;
+
+        commandHistory.push(cmd);
+        historyIndex = commandHistory.length;
+        consoleInput.value = '';
+
+        appendConsoleLine('cmd', ['> ' + cmd]);
+        sendCommandToPreview(cmd);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!commandHistory.length) return;
+        historyIndex = Math.max(0, historyIndex - 1);
+        consoleInput.value = commandHistory[historyIndex] || '';
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!commandHistory.length) return;
+        historyIndex = Math.min(commandHistory.length, historyIndex + 1);
+        consoleInput.value = commandHistory[historyIndex] || '';
+      }
+    }
+
+    function sendCommandToPreview(code) {
+      if (!preview.contentWindow) {
+        appendConsoleLine('system', ['预览窗口尚未就绪']);
+        return;
+      }
+      try {
+        preview.contentWindow.postMessage({ __htmlRunnerCmd__: true, code: code }, '*');
+      } catch (err) {
+        appendConsoleLine('error', ['命令发送失败: ' + err.message]);
+      }
+    }
+
+    /* ---------- 打开 / 关闭 ---------- */
+    function toggleConsole() {
+      if (consoleOpened) {
+        closeConsole();
+      } else {
+        openConsole();
+      }
+    }
+
+    function openConsole() {
+      consolePanel.classList.add('open');
+      consoleOpened = true;
+      setConsoleHeight(consoleHeight);
+      toggleConsoleBtn.classList.add('active');
+
+      if (consoleOutput.childElementCount === 0) {
+        appendConsoleLine('system', ['控制台已就绪，输入 JavaScript 表达式后按 Enter 执行']);
+      }
+
+      scrollConsoleToBottom();
+      setTimeout(() => consoleInput.focus(), 50);
+    }
+
+    function closeConsole() {
+      consolePanel.classList.remove('open');
+      consoleOpened = false;
+      toggleConsoleBtn.classList.remove('active');
+      preview.focus();
+    }
+
+    /* ---------- 高度计算（基于左侧区域高度） ---------- */
+    function setConsoleHeight(h) {
+      const sectionH = editorSection.offsetHeight || window.innerHeight;
+      // 给代码区保留至少约 170px（头部 + 代码 + 状态栏）
+      const maxH = Math.max(120, sectionH - 200);
+      consoleHeight = Math.max(100, Math.min(maxH, h));
+      consolePanel.style.height = consoleHeight + 'px';
+    }
+
+    /* ---------- 上下拖拽（向上拖动变高，支持鼠标/触摸） ---------- */
+    function startConsoleResize(e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const startY = e.clientY;
+      const startHeight = consolePanel.offsetHeight;
+
+      consoleResizer.classList.add('dragging');
+      document.body.style.cursor = 'row-resize';
+
+      let rafId = null;
+      let pendingHeight = startHeight;
+
+      function onMove(ev) {
+        // 鼠标上移（clientY 变小）→ 控制台变高
+        const delta = startY - ev.clientY;
+        pendingHeight = startHeight + delta;
+
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          setConsoleHeight(pendingHeight);
+          pendingHeight = consoleHeight;
+          scrollConsoleToBottom();
+        });
+      }
+
+      function onUp() {
+        if (rafId) cancelAnimationFrame(rafId);
+        consoleResizer.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onUp);
+
+        try {
+          localStorage.setItem('consoleHeight', String(Math.round(consoleHeight)));
+        } catch (err) { }
+      }
+
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
+    }
+
+    /* 初始化 */
     init();
   </script>
 </body>
